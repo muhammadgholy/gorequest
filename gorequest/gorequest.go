@@ -45,7 +45,7 @@ func (GoRequestContext *GoRequestContext) GetHeaders(uri string) map[string]stri
 	
 	headers := make(map[string]string);
 
-	if (GoRequestContext.AditionalHeader) {
+	if (GoRequestContext.AdditionalHeader) {
 		headers["User-Agent"] = GoRequestContext.UserAgent;
 		headers["Accept"] = GoRequestContext.Accept;
 		headers["Accept-Language"] = "en-US,en;q=0.9,mt;q=0.8";
@@ -56,7 +56,7 @@ func (GoRequestContext *GoRequestContext) GetHeaders(uri string) map[string]stri
 	if (GoRequestContext.RequestData.Status) {
 		headers["Content-Type"] = GoRequestContext.RequestData.Type;
 		headers["Content-Length"] = strconv.Itoa(int(GoRequestContext.RequestData.Length));
-		if (GoRequestContext.AditionalHeader) {
+		if (GoRequestContext.AdditionalHeader) {
 			headers["origin"] = u.Scheme + "://" + u.Host;
 		
 		}
@@ -80,7 +80,7 @@ func (GoRequestContext *GoRequestContext) GetHeaders(uri string) map[string]stri
 		
 	}
 
-	if (GoRequestContext.AditionalHeader) {
+	if (GoRequestContext.AdditionalHeader) {
 		headers["Upgrade-Insecure-Requests"] = "1";
 		headers["Cache-Control"] = "max-age=0";
 		headers["TE"] = "Trailers";
