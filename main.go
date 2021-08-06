@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/muhammadgholy/gorequest"
+	"github.com/muhammadgholy/gorequest/gorequest"
 )
 
 func main() {
