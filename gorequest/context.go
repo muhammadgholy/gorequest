@@ -4,6 +4,7 @@ import "net/http"
 
 type GoRequestContext struct {
 	HTTPContext *http.Client
+	MaxRedirect int
 	Header []HeaderData
 	Cookies []CookiesData
 	URLLast string

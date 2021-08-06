@@ -25,7 +25,7 @@ func (GoRequestContext *GoRequestContext) Init() {
 	}
 	GoRequestContext.HTTPContext = &http.Client{}
 	GoRequestContext.HTTPContext.CheckRedirect = func(req *http.Request, via []*http.Request) error {
-		if len(via) > 10 {
+		if (len(via) > GoRequestContext.MaxRedirect) {
 			return errors.New("too many redirects");
 			
 		}
@@ -83,8 +83,7 @@ func (GoRequestContext *GoRequestContext) GetHeaders(uri string) map[string]stri
 	if (GoRequestContext.AdditionalHeader) {
 		headers["Upgrade-Insecure-Requests"] = "1";
 		headers["Cache-Control"] = "max-age=0";
-		headers["TE"] = "Trailers";
-
+		
 	}
 
 	for _, hData := range GoRequestContext.Header {
@@ -148,7 +147,7 @@ func (GoRequestContext *GoRequestContext) GetPage(uri string,) (string, string) 
 		req, _ = http.NewRequest(GoRequestContext.Method, u.String(), nil);
 	
 	}
-
+	
 	// Header
 	requestHeader = GoRequestContext.GetHeaders(uri);
 	for hName, hValue := range requestHeader {
@@ -265,6 +264,8 @@ func (GoRequestContext *GoRequestContext) GET(uri string) (string, string) {
 
 		}
 	}();
+
+	GoRequestContext.Method = "GET";
 
 	return GoRequestContext.GetPage(uri);	
 }
