@@ -2,8 +2,9 @@ package main
 
 import (
 	"fmt"
-	"gorequest/gorequest"
 	"os"
+
+	"github.com/muhammadgholy/gorequest"
 )
 
 func main() {
