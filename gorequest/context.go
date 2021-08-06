@@ -9,7 +9,7 @@ type GoRequestContext struct {
 	URLLast string
 	URLStack []string
 	CookiesEnable bool
-	AditionalHeader bool
+	AdditionalHeader bool
 	Accept string
 	UserAgent  string
 	FollowLocation bool
