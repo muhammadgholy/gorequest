@@ -1,7 +1,6 @@
 package gorequest
 
 import (
-	"fmt"
 	"strings"
 	"time"
 )
@@ -56,8 +55,14 @@ func (GoRequestContext *GoRequestContext) CookiesAdd(data string, host string) {
 			layout := "Mon, 02-Jan-2006 15:04:05 MST"
 			t, err := time.Parse(layout, tValue)
 			
-			if err != nil {
-				fmt.Println(err)
+			// Check Other Layout
+			if (err != nil) {
+				layout = "Mon, 02 Jan 2006 15:04:05 MST"
+				t, err = time.Parse(layout, tValue)
+				if (err != nil) {
+					continue;
+					
+				}
 			}
 
 			var expiryTime int = int(t.Unix());
@@ -104,7 +109,12 @@ func (GoRequestContext *GoRequestContext) CookiesFetch(domain string, path strin
 	for _, value := range GoRequestContext.Cookies {
 		if (value.Domain[0:1] == ".") {
 			if (len(value.Domain) >= len(domain)) {
-				if ((domain[len(domain)-len(value.Domain):] == value.Domain[1:]) || (value.Domain == domain)) {
+				limit := len(domain)-len(value.Domain);
+				if (limit < 0) {
+					limit = 0;
+
+				}
+				if ((domain[limit:] == value.Domain[1:]) || (value.Domain == domain)) {
 					cookies[value.Name] = value.Value;
 	
 				}
