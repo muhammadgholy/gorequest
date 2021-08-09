@@ -105,7 +105,7 @@ func (GoRequestContext *GoRequestContext) GetHeaders(uri string) map[string]stri
 	return headers;
 }
 
-func (GoRequestContext *GoRequestContext) GetPage(uri string,) (string, string) {
+func (GoRequestContext *GoRequestContext) GetPage(uri string,) (int, string, string) {
 	var respondHeader string;
 	var respondBody string;
 	var requestHeader = make(map[string]string);
@@ -207,6 +207,7 @@ func (GoRequestContext *GoRequestContext) GetPage(uri string,) (string, string) 
 		return GoRequestContext.GetPage(newRedirectLink);
 	}
 	respondHeader = strings.Join(tmp1, "\n");
+	
 
 	// Check that the server actual sent compressed data
 	var reader io.ReadCloser
@@ -232,10 +233,10 @@ func (GoRequestContext *GoRequestContext) GetPage(uri string,) (string, string) 
 	respondBody = string(tmpbody);
 	
 	//
-	return respondHeader, respondBody;
+	return request.StatusCode, respondHeader, respondBody;
 }
 
-func (GoRequestContext *GoRequestContext) POST(uri string, postdata string) (string, string) {
+func (GoRequestContext *GoRequestContext) POST(uri string, postdata string) (int, string, string) {
 	defer func() {
 		errorMessage := recover();
 		if (errorMessage != nil) {
@@ -256,7 +257,7 @@ func (GoRequestContext *GoRequestContext) POST(uri string, postdata string) (str
 	return GoRequestContext.GetPage(uri);	
 }
 
-func (GoRequestContext *GoRequestContext) GET(uri string) (string, string) {
+func (GoRequestContext *GoRequestContext) GET(uri string) (int, string, string) {
 	defer func() {
 		errorMessage := recover();
 		if (errorMessage != nil) {

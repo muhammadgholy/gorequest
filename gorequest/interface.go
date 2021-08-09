@@ -1,7 +1,7 @@
 package gorequest
 
 type GoRequest interface {
-	GET(string) (string, string)
-	POST(string, string) (string, string)
+	GET(string) (int, string, string)
+	POST(string, string) (int, string, string)
 	Init()
 }
