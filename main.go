@@ -11,8 +11,8 @@ func main() {
 	var GoRequest gorequest.GoRequest = &gorequest.GoRequestContext{
 		CookiesEnable: true,
 		AdditionalHeader: true,
-		// Proxy: "",
-		// ProxyType: "socks5",
+		Proxy: "159.69.244.44:5751",
+		ProxyType: "socks5",
 		MaxRedirect: 10,
 		Accept: "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.9",
 		UserAgent: "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:72.0) Gecko/20100101 Firefox/72.0",

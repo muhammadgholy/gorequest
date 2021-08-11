@@ -19,7 +19,8 @@ import (
 )
 
 func (GoRequestContext *GoRequestContext) Init() {
-	var transport *http.Transport;
+	var transport *http.Transport = &http.Transport{};
+
 	// Proxy
 	if (GoRequestContext.Proxy != "") {
 		if (GoRequestContext.ProxyType == "socks5") {
@@ -58,12 +59,14 @@ func (GoRequestContext *GoRequestContext) Init() {
 }
 
 func (GoRequestContext *GoRequestContext) GetHeaders(uri string) map[string]string {
+	headers := make(map[string]string);
+
 	u, err := url.Parse(uri)
-    if err != nil {
-        panic(err)
+    if (err != nil) {
+		return headers;
+		
     }
 	
-	headers := make(map[string]string);
 
 	if (GoRequestContext.AdditionalHeader) {
 		headers["User-Agent"] = GoRequestContext.UserAgent;
@@ -88,7 +91,7 @@ func (GoRequestContext *GoRequestContext) GetHeaders(uri string) map[string]stri
 		if (len(currentCookies) > 0) {
 			var tmp1 []string;
 			for key, value := range currentCookies {
-				tmp1 = append(tmp1, key + "=" + strings.Replace(value, " ", "+", 0));
+				tmp1 = append(tmp1, key + "=" + strings.Replace(value, " ", "+", -1));
 		
 			}
 			headers["Cookie"] = strings.Join(tmp1, "; ") + ";";
@@ -133,11 +136,11 @@ func (GoRequestContext *GoRequestContext) GetPage(uri string,) (int, string, str
 	// Fix Uri
 	u, err := url.Parse(uri);
     if (err != nil) {
-        panic(err);
+		return 0, "", "";
 
     }
 	if (strings.ToUpper(u.Scheme) != "HTTP" && strings.ToUpper(u.Scheme) != "HTTPS") {
-		panic("Invalid URL Schema");
+		return 0, "", "";
 
 	}
 
@@ -174,7 +177,11 @@ func (GoRequestContext *GoRequestContext) GetPage(uri string,) (int, string, str
 		req.Header.Add(hName, hValue);
 
 	}
-	request, _ := GoRequestContext.HTTPContext.Do(req);
+	request, err := GoRequestContext.HTTPContext.Do(req);
+	if (err != nil) {
+		return 0, "", "";
+
+	}
 
 	//
 	var newRedirectLink string = "";
@@ -260,7 +267,7 @@ func (GoRequestContext *GoRequestContext) POST(uri string, postdata string) (int
 	defer func() {
 		errorMessage := recover();
 		if (errorMessage != nil) {
-			fmt.Println("Something went wrong while GET! " + errorMessage.(string));
+			fmt.Println("Something went wrong while POST! " + errorMessage.(string));
 
 		}
 	}();
