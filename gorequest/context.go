@@ -17,6 +17,8 @@ type GoRequestContext struct {
 	Referer string
 	Method string
 	RequestData RequestData
+	Proxy string
+	ProxyType string
 }
 
 type RequestData struct {

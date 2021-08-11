@@ -2,19 +2,37 @@ package gorequest
 
 import (
 	"compress/gzip"
+	"context"
 	"crypto/tls"
 	"errors"
 	"fmt"
 	"io"
 	"io/ioutil"
 	"log"
+	"net"
 	"net/http"
 	"net/url"
 	"strconv"
 	"strings"
+
+	"golang.org/x/net/proxy"
 )
 
 func (GoRequestContext *GoRequestContext) Init() {
+	var transport *http.Transport;
+	// Proxy
+	if (GoRequestContext.Proxy != "") {
+		if (GoRequestContext.ProxyType == "socks5") {
+			dialer, _ := proxy.SOCKS5("tcp", GoRequestContext.Proxy, nil, proxy.Direct)
+			dialContext := func(ctx context.Context, network, address string) (net.Conn, error) {
+				return dialer.Dial(network, address)
+			}
+			transport = &http.Transport{
+				DialContext: dialContext,
+				DisableKeepAlives: true,
+			}
+		}
+	}
 
 	// create a custom error to know if a redirect happened.
 	var RedirectAttemptedError = errors.New("redirect");
@@ -23,7 +41,9 @@ func (GoRequestContext *GoRequestContext) Init() {
 	http.DefaultTransport.(*http.Transport).TLSClientConfig = &tls.Config{
 		InsecureSkipVerify: true,
 	}
-	GoRequestContext.HTTPContext = &http.Client{}
+	GoRequestContext.HTTPContext = &http.Client{
+		Transport: transport,
+	}
 	GoRequestContext.HTTPContext.CheckRedirect = func(req *http.Request, via []*http.Request) error {
 		if (len(via) > GoRequestContext.MaxRedirect) {
 			return errors.New("too many redirects");
