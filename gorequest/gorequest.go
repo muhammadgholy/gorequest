@@ -2,20 +2,16 @@ package gorequest
 
 import (
 	"compress/gzip"
-	"context"
 	"crypto/tls"
 	"errors"
 	"fmt"
 	"io"
 	"io/ioutil"
 	"log"
-	"net"
 	"net/http"
 	"net/url"
 	"strconv"
 	"strings"
-
-	"golang.org/x/net/proxy"
 )
 
 func (GoRequestContext *GoRequestContext) Init() {
@@ -24,13 +20,15 @@ func (GoRequestContext *GoRequestContext) Init() {
 	// Proxy
 	if (GoRequestContext.Proxy != "") {
 		if (GoRequestContext.ProxyType == "socks5") {
-			dialer, _ := proxy.SOCKS5("tcp", GoRequestContext.Proxy, nil, proxy.Direct)
-			dialContext := func(ctx context.Context, network, address string) (net.Conn, error) {
-				return dialer.Dial(network, address)
-			}
+			// dialer, _ := proxy.SOCKS5("tcp", GoRequestContext.Proxy, nil, proxy.Direct);
+			// dialContext := func(ctx context.Context, network, address string) (net.Conn, error) {
+			// 	return dialer.Dial(network, address)
+			// }
+			proxy, _ := url.Parse("socks5://" + GoRequestContext.Proxy);
 			transport = &http.Transport{
-				DialContext: dialContext,
-				DisableKeepAlives: true,
+				// DialContext: dialContext,
+				Proxy: http.ProxyURL(proxy),
+				// DisableKeepAlives: false,
 			}
 		}
 	}
@@ -39,6 +37,8 @@ func (GoRequestContext *GoRequestContext) Init() {
 	var RedirectAttemptedError = errors.New("redirect");
 
 	// return the error, so client won't attempt redirects.
+	http.DefaultTransport.(*http.Transport).MaxIdleConns = 1000
+	http.DefaultTransport.(*http.Transport).MaxIdleConnsPerHost = 1000
 	http.DefaultTransport.(*http.Transport).TLSClientConfig = &tls.Config{
 		InsecureSkipVerify: true,
 	}
@@ -73,6 +73,7 @@ func (GoRequestContext *GoRequestContext) GetHeaders(uri string) map[string]stri
 		headers["Accept"] = GoRequestContext.Accept;
 		headers["Accept-Language"] = "en-US,en;q=0.9,mt;q=0.8";
 		headers["Accept-Encoding"] = "gzip, deflate";
+		headers["Connection"] = "Keep-Alive";
 
 	}
 
