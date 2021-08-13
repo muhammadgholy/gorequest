@@ -175,18 +175,21 @@ func (GoRequestContext *GoRequestContext) GetPage(uri string,) (int, string, str
 	// Do It
 	var req *http.Request;
 	if (GoRequestContext.RequestData.Status) {	
+		GoRequestContext.Debug(" > With PostData!");
 		var postdata io.Reader;
 
 		//
 		if (len(GoRequestContext.RequestData.FormData) > 0) {
 			form := url.Values{}
 			for k,v := range GoRequestContext.RequestData.FormData {
+				GoRequestContext.Debug(" > Added Data \"" + k + "\" with value \"" + v + "\"");
 				form.Add(k, v);
 	
 			}
 			postdata = strings.NewReader(form.Encode());
 
 		} else {
+			GoRequestContext.Debug(" > Data \"" + GoRequestContext.RequestData.Data + "\"");
 			postdata = strings.NewReader(GoRequestContext.RequestData.Data);
 
 		}
@@ -195,6 +198,7 @@ func (GoRequestContext *GoRequestContext) GetPage(uri string,) (int, string, str
 		req, _ = http.NewRequest(GoRequestContext.Method, u.String(), postdata);	
 
 	} else {
+		GoRequestContext.Debug(" > Without PostData!");
 		req, _ = http.NewRequest(GoRequestContext.Method, u.String(), nil);
 	
 	}
