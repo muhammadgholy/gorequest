@@ -167,7 +167,7 @@ func (GoRequestContext *GoRequestContext) GetPage(uri string,) (int, string, str
 
 	// Do It
 	var req *http.Request;
-	if (GoRequestContext.RequestData.Status) {
+	if (GoRequestContext.RequestData.Status) {	
 		var postdata io.Reader;
 
 		//
@@ -192,7 +192,7 @@ func (GoRequestContext *GoRequestContext) GetPage(uri string,) (int, string, str
 	
 	}
 	
-	// Header
+	// Headers
 	requestHeader = GoRequestContext.GetHeaders(uri);
 	for hName, hValue := range requestHeader {
 		GoRequestContext.Debug(" > Added Header \"" + hName + "\" with value \"" + hValue + "\"");
