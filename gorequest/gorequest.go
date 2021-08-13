@@ -216,6 +216,19 @@ func (GoRequestContext *GoRequestContext) GetPage(uri string,) (int, string, str
 
 	}
 
+	if (GoRequestContext.EnableDebug) {
+		fmt.Println("Header: ", request.Request.Header);
+		fmt.Println("Method: ", request.Request.Method);
+		fmt.Println("Body: ", request.Request.Body);
+		fmt.Println("Host: ", request.Request.Host);
+		fmt.Println("ContentLength: ", request.Request.ContentLength);
+		fmt.Println("Proto: ", request.Request.Proto);
+		fmt.Println("TransferEncoding: ", request.Request.TransferEncoding);
+		fmt.Println("Cookies: ", request.Request.Cookies());
+		fmt.Println("Referer: ", request.Request.Referer());
+
+	}
+
 	//
 	var newRedirectLink string = "";
 	tmp1 := make([]string, 0);
@@ -291,7 +304,7 @@ func (GoRequestContext *GoRequestContext) GetPage(uri string,) (int, string, str
 
 	//
 	respondBody = string(tmpbody);
-	
+
 	//
 	return request.StatusCode, respondHeader, respondBody, "";
 }

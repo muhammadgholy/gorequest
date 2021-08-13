@@ -76,6 +76,7 @@ func (GoRequestContext *GoRequestContext) CookiesAdd(data string, host string) {
 	}
 
 	if (!isExpired) {
+		GoRequestContext.Debug(" > Cookies Added \"" + cookieName + "\" \"" + cookieValue + "\"");
 		newCookieData := CookiesData{
 			Domain: domain,
 			Name: cookieName,
