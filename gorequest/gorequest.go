@@ -23,25 +23,24 @@ func (GoRequestContext *GoRequestContext) Debug(message string) {
 	}
 }
 func (GoRequestContext *GoRequestContext) Init() {
-	var transport *http.Transport = &http.Transport{
-		MaxIdleConns: 100000,
-		MaxIdleConnsPerHost: 100000,
-		MaxConnsPerHost: 100000,
-		IdleConnTimeout: 30 * time.Second,
-		DisableCompression: true,
-
-		// Timeout Dial
-		Dial: (&net.Dialer{
-			Timeout: 5 * time.Second,
-		}).Dial,
-		TLSHandshakeTimeout: 5 * time.Second,
-	};
-
 	if (GoRequestContext.Timeout <= 0) {
 		GoRequestContext.Timeout = 15;
 
 	}
 
+	var transport *http.Transport = &http.Transport{
+		MaxIdleConns: 100000,
+		MaxIdleConnsPerHost: 100000,
+		MaxConnsPerHost: 100000,
+		IdleConnTimeout: 90 * time.Second,
+		DisableCompression: true,
+
+		// Timeout Dial
+		Dial: (&net.Dialer{
+			Timeout: time.Duration(GoRequestContext.Timeout) * time.Second,
+		}).Dial,
+		TLSHandshakeTimeout: time.Duration(GoRequestContext.Timeout) * time.Second,
+	};
 	// Proxy
 	if (GoRequestContext.Proxy != "") {
 		// dialer, _ := proxy.SOCKS5("tcp", GoRequestContext.Proxy, nil, proxy.Direct);
@@ -148,6 +147,14 @@ func (GoRequestContext *GoRequestContext) GetHeaders(uri string) map[string]stri
 }
 
 func (GoRequestContext *GoRequestContext) GetPage(uri string,) (int, string, string, string) {
+	defer func() {
+		errorMessage := recover();
+		if (errorMessage != nil) {
+			fmt.Println("Something went wrong while do request! " + errorMessage.(string));
+
+		}
+	}();
+
 	GoRequestContext.Debug("Preparing Request for \"" + uri + "\"");
 
 	var respondHeader string;
