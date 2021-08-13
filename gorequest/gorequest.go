@@ -348,5 +348,6 @@ func (GoRequestContext *GoRequestContext) GET(uri string) (int, string, string, 
 	}();
 
 	GoRequestContext.Method = "GET";
+	GoRequestContext.RequestData = nil;
 	return GoRequestContext.GetPage(uri);	
 }
