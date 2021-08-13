@@ -18,12 +18,12 @@ func main() {
 
 	GoRequest.Init();
 	if (len(os.Args) == 2) { 
-		statuscode, header, body := GoRequest.GET(os.Args[1]);
-		fmt.Println(header, "\n", "\n", body, "\r\nStatus Code: ", statuscode);
+		statuscode, header, body, err := GoRequest.GET(os.Args[1]);
+		fmt.Println(header, "\n", "\n", body, "\r\nStatus Code: ", statuscode, "\nError: ", err);
 
 	} else if (len(os.Args) == 3) { 
-		statuscode, header, body := GoRequest.POST(os.Args[1], os.Args[2]);
-		fmt.Println(header, "\n", "\n", body, "\r\nStatus Code: ", statuscode);
+		statuscode, header, body, err := GoRequest.POST(os.Args[1], os.Args[2]);
+		fmt.Println(header, "\n", "\n", body, "\r\nStatus Code: ", statuscode, "\nError: ", err);
 
 	}
 }

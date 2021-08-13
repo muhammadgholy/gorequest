@@ -147,7 +147,7 @@ func (GoRequestContext *GoRequestContext) GetHeaders(uri string) map[string]stri
 	return headers;
 }
 
-func (GoRequestContext *GoRequestContext) GetPage(uri string,) (int, string, string) {
+func (GoRequestContext *GoRequestContext) GetPage(uri string,) (int, string, string, string) {
 	GoRequestContext.Debug("Preparing Request for \"" + uri + "\"");
 
 	var respondHeader string;
@@ -157,11 +157,11 @@ func (GoRequestContext *GoRequestContext) GetPage(uri string,) (int, string, str
 	// Fix Uri
 	u, err := url.Parse(uri);
     if (err != nil) {
-		return 0, "", "";
+		return 0, "", "", err.Error();
 
     }
 	if (strings.ToUpper(u.Scheme) != "HTTP" && strings.ToUpper(u.Scheme) != "HTTPS") {
-		return 0, "", "";
+		return 0, "", "", err.Error();
 
 	}
 
@@ -201,7 +201,7 @@ func (GoRequestContext *GoRequestContext) GetPage(uri string,) (int, string, str
 	}
 	request, err := GoRequestContext.HTTPContext.Do(req);
 	if (err != nil) {
-		return 0, "", "";
+		return 0, "", "", err.Error();
 
 	}
 
@@ -282,10 +282,10 @@ func (GoRequestContext *GoRequestContext) GetPage(uri string,) (int, string, str
 	respondBody = string(tmpbody);
 	
 	//
-	return request.StatusCode, respondHeader, respondBody;
+	return request.StatusCode, respondHeader, respondBody, "";
 }
 
-func (GoRequestContext *GoRequestContext) POST(uri string, postdata string) (int, string, string) {
+func (GoRequestContext *GoRequestContext) POST(uri string, postdata string) (int, string, string, string) {
 	defer func() {
 		errorMessage := recover();
 		if (errorMessage != nil) {
@@ -306,7 +306,7 @@ func (GoRequestContext *GoRequestContext) POST(uri string, postdata string) (int
 	return GoRequestContext.GetPage(uri);	
 }
 
-func (GoRequestContext *GoRequestContext) GET(uri string) (int, string, string) {
+func (GoRequestContext *GoRequestContext) GET(uri string) (int, string, string, string) {
 	defer func() {
 		errorMessage := recover();
 		if (errorMessage != nil) {
