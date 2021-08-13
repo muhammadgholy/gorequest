@@ -8,42 +8,54 @@ import (
 	"io"
 	"io/ioutil"
 	"log"
+	"net"
 	"net/http"
 	"net/url"
 	"strconv"
 	"strings"
+	"time"
 )
 
 func (GoRequestContext *GoRequestContext) Init() {
-	var transport *http.Transport = &http.Transport{};
+	var transport *http.Transport = &http.Transport{
+		MaxIdleConns: 100000,
+		MaxIdleConnsPerHost: 100000,
+		MaxConnsPerHost: 100000,
+		IdleConnTimeout: 90 * time.Second,
+		DisableCompression: true,
+
+		// Timeout Dial
+		Dial: (&net.Dialer{
+			Timeout: 5 * time.Second,
+		}).Dial,
+		TLSHandshakeTimeout: 5 * time.Second,
+	};
+
+	if (GoRequestContext.Timeout <= 0) {
+		GoRequestContext.Timeout = 15;
+
+	}
 
 	// Proxy
 	if (GoRequestContext.Proxy != "") {
-		if (GoRequestContext.ProxyType == "socks5") {
-			// dialer, _ := proxy.SOCKS5("tcp", GoRequestContext.Proxy, nil, proxy.Direct);
-			// dialContext := func(ctx context.Context, network, address string) (net.Conn, error) {
-			// 	return dialer.Dial(network, address)
-			// }
-			proxy, _ := url.Parse("socks5://" + GoRequestContext.Proxy);
-			transport = &http.Transport{
-				// DialContext: dialContext,
-				Proxy: http.ProxyURL(proxy),
-				// DisableKeepAlives: false,
-			}
-		}
+		// dialer, _ := proxy.SOCKS5("tcp", GoRequestContext.Proxy, nil, proxy.Direct);
+		// dialContext := func(ctx context.Context, network, address string) (net.Conn, error) {
+		// 	return dialer.Dial(network, address)
+		// }
+		proxy, _ := url.Parse(GoRequestContext.ProxyType + "://" + GoRequestContext.Proxy);
+		transport.Proxy = http.ProxyURL(proxy);
 	}
 
 	// create a custom error to know if a redirect happened.
 	var RedirectAttemptedError = errors.New("redirect");
 
 	// return the error, so client won't attempt redirects.
-	http.DefaultTransport.(*http.Transport).MaxIdleConns = 1000
-	http.DefaultTransport.(*http.Transport).MaxIdleConnsPerHost = 1000
 	http.DefaultTransport.(*http.Transport).TLSClientConfig = &tls.Config{
 		InsecureSkipVerify: true,
 	}
 	GoRequestContext.HTTPContext = &http.Client{
 		Transport: transport,
+		Timeout: time.Second * time.Duration(GoRequestContext.Timeout),
 	}
 	GoRequestContext.HTTPContext.CheckRedirect = func(req *http.Request, via []*http.Request) error {
 		if (len(via) > GoRequestContext.MaxRedirect) {
@@ -295,6 +307,5 @@ func (GoRequestContext *GoRequestContext) GET(uri string) (int, string, string) 
 	}();
 
 	GoRequestContext.Method = "GET";
-
 	return GoRequestContext.GetPage(uri);	
 }

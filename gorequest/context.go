@@ -19,6 +19,7 @@ type GoRequestContext struct {
 	RequestData RequestData
 	Proxy string
 	ProxyType string
+	Timeout int
 }
 
 type RequestData struct {
