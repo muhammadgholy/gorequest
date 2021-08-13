@@ -20,6 +20,7 @@ type GoRequestContext struct {
 	Proxy string
 	ProxyType string
 	Timeout int
+	EnableDebug bool
 }
 
 type RequestData struct {

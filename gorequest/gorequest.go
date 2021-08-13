@@ -16,12 +16,18 @@ import (
 	"time"
 )
 
+func (GoRequestContext *GoRequestContext) Debug(message string) {
+	if (GoRequestContext.EnableDebug) {
+		fmt.Println(message);
+		
+	}
+}
 func (GoRequestContext *GoRequestContext) Init() {
 	var transport *http.Transport = &http.Transport{
 		MaxIdleConns: 100000,
 		MaxIdleConnsPerHost: 100000,
 		MaxConnsPerHost: 100000,
-		IdleConnTimeout: 90 * time.Second,
+		IdleConnTimeout: 30 * time.Second,
 		DisableCompression: true,
 
 		// Timeout Dial
@@ -85,7 +91,7 @@ func (GoRequestContext *GoRequestContext) GetHeaders(uri string) map[string]stri
 		headers["Accept"] = GoRequestContext.Accept;
 		headers["Accept-Language"] = "en-US,en;q=0.9,mt;q=0.8";
 		headers["Accept-Encoding"] = "gzip, deflate";
-		headers["Connection"] = "Keep-Alive";
+		// headers["Connection"] = "Keep-Alive";
 
 	}
 
@@ -142,6 +148,8 @@ func (GoRequestContext *GoRequestContext) GetHeaders(uri string) map[string]stri
 }
 
 func (GoRequestContext *GoRequestContext) GetPage(uri string,) (int, string, string) {
+	GoRequestContext.Debug("Preparing Request for \"" + uri + "\"");
+
 	var respondHeader string;
 	var respondBody string;
 	var requestHeader = make(map[string]string);
@@ -187,6 +195,7 @@ func (GoRequestContext *GoRequestContext) GetPage(uri string,) (int, string, str
 	// Header
 	requestHeader = GoRequestContext.GetHeaders(uri);
 	for hName, hValue := range requestHeader {
+		GoRequestContext.Debug(" > Added Header \"" + hName + "\" with value \"" + hValue + "\"");
 		req.Header.Add(hName, hValue);
 
 	}
