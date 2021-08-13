@@ -8,7 +8,6 @@ import (
 	"io"
 	"io/ioutil"
 	"log"
-	"net"
 	"net/http"
 	"net/url"
 	"strconv"
@@ -28,19 +27,17 @@ func (GoRequestContext *GoRequestContext) Init() {
 
 	}
 
-	var transport *http.Transport = &http.Transport{
-		MaxIdleConns: 100000,
-		MaxIdleConnsPerHost: 100000,
-		MaxConnsPerHost: 100000,
-		IdleConnTimeout: 90 * time.Second,
-		DisableCompression: true,
+	customTransport := http.DefaultTransport.(*http.Transport).Clone()
+	customTransport.MaxIdleConns = 100000;
+	customTransport.MaxIdleConnsPerHost = 100000;
+	customTransport.MaxConnsPerHost = 100000;
+	customTransport.IdleConnTimeout = 90 * time.Second;
+	customTransport.DisableCompression = true;
+	customTransport.TLSHandshakeTimeout = time.Duration(GoRequestContext.Timeout) * time.Second;
+	// customTransport.Dial = (&net.Dialer{
+	// 	Timeout: time.Duration(GoRequestContext.Timeout) * time.Second,
+	// }).Dial,;
 
-		// Timeout Dial
-		Dial: (&net.Dialer{
-			Timeout: time.Duration(GoRequestContext.Timeout) * time.Second,
-		}).Dial,
-		TLSHandshakeTimeout: time.Duration(GoRequestContext.Timeout) * time.Second,
-	};
 	// Proxy
 	if (GoRequestContext.Proxy != "") {
 		// dialer, _ := proxy.SOCKS5("tcp", GoRequestContext.Proxy, nil, proxy.Direct);
@@ -48,18 +45,19 @@ func (GoRequestContext *GoRequestContext) Init() {
 		// 	return dialer.Dial(network, address)
 		// }
 		proxy, _ := url.Parse(GoRequestContext.ProxyType + "://" + GoRequestContext.Proxy);
-		transport.Proxy = http.ProxyURL(proxy);
+		customTransport.Proxy = http.ProxyURL(proxy);
+
 	}
 
 	// create a custom error to know if a redirect happened.
-	var RedirectAttemptedError = errors.New("redirect");
+	var RedirectAttemptedError = errors.New("GOREQUEST_DO_REDIRECT");
 
 	// return the error, so client won't attempt redirects.
 	http.DefaultTransport.(*http.Transport).TLSClientConfig = &tls.Config{
 		InsecureSkipVerify: true,
 	}
 	GoRequestContext.HTTPContext = &http.Client{
-		Transport: transport,
+		Transport: customTransport,
 		Timeout: time.Second * time.Duration(GoRequestContext.Timeout),
 	}
 	GoRequestContext.HTTPContext.CheckRedirect = func(req *http.Request, via []*http.Request) error {
@@ -195,7 +193,7 @@ func (GoRequestContext *GoRequestContext) GetPage(uri string,) (int, string, str
 		}
 
 		//
-		req, err = http.NewRequest(GoRequestContext.Method, u.String(), postdata);
+		req, _ = http.NewRequest(GoRequestContext.Method, u.String(), postdata);
 		if (err != nil) {
 			return 0, "", "", err.Error();
 	
@@ -203,8 +201,8 @@ func (GoRequestContext *GoRequestContext) GetPage(uri string,) (int, string, str
 
 	} else {
 		GoRequestContext.Debug(" > Without PostData!");
-		req, err = http.NewRequest(GoRequestContext.Method, u.String(), nil);
-		if (err != nil) {
+		req, _ = http.NewRequest(GoRequestContext.Method, u.String(), nil);
+	 	if (err != nil) {
 			return 0, "", "", err.Error();
 	
 		}
@@ -220,8 +218,11 @@ func (GoRequestContext *GoRequestContext) GetPage(uri string,) (int, string, str
 	}
 	request, err := GoRequestContext.HTTPContext.Do(req);
 	if (err != nil) {
-		return 0, "", "", err.Error();
-
+		errMessage := err.Error();
+		if (!strings.Contains(errMessage, "GOREQUEST_DO_REDIRECT")) {
+			return 0, "", "", err.Error();
+	
+		}
 	}
 
 	if (GoRequestContext.EnableDebug) {
