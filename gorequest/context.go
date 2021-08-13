@@ -6,7 +6,7 @@ type GoRequestContext struct {
 	HTTPContext *http.Client
 	MaxRedirect int
 	Header []HeaderData
-	Cookies []CookiesData
+	CookiesContext GoRequestCookiesContext
 	URLLast string
 	URLStack []string
 	CookiesEnable bool
@@ -21,6 +21,10 @@ type GoRequestContext struct {
 	ProxyType string
 	Timeout int
 	EnableDebug bool
+}
+
+type GoRequestCookiesContext struct {
+	Cookies []CookiesData
 }
 
 type RequestData struct {

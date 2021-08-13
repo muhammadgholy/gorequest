@@ -8,10 +8,12 @@ import (
 )
 
 func main() {
+	var GoRequestCookiesContext gorequest.GoRequestCookiesContext = gorequest.GoRequestCookiesContext{};
 	var GoRequest gorequest.GoRequest = &gorequest.GoRequestContext{
 		CookiesEnable: true,
 		AdditionalHeader: true,
 		MaxRedirect: 10,
+		CookiesContext: GoRequestCookiesContext,
 		Accept: "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.9",
 		UserAgent: "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:72.0) Gecko/20100101 Firefox/72.0",
 	};
