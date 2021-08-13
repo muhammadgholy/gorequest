@@ -94,7 +94,7 @@ func (GoRequestContext *GoRequestContext) GetHeaders(uri string) map[string]stri
 
 	}
 
-	if (GoRequestContext.RequestData.Status) {
+	if (GoRequestContext.RequestData != nil) {
 		headers["Content-Type"] = GoRequestContext.RequestData.Type;
 		headers["Content-Length"] = strconv.Itoa(int(GoRequestContext.RequestData.Length));
 		if (GoRequestContext.AdditionalHeader) {
@@ -150,7 +150,7 @@ func (GoRequestContext *GoRequestContext) GetPage(uri string,) (int, string, str
 	defer func() {
 		errorMessage := recover();
 		if (errorMessage != nil) {
-			fmt.Println("Something went wrong while do request! " + errorMessage.(string));
+			fmt.Println("Something went wrong while do request! ");
 
 		}
 	}();
@@ -174,7 +174,7 @@ func (GoRequestContext *GoRequestContext) GetPage(uri string,) (int, string, str
 
 	// Do It
 	var req *http.Request;
-	if (GoRequestContext.RequestData.Status) {	
+	if (GoRequestContext.RequestData != nil) {	
 		GoRequestContext.Debug(" > With PostData!");
 		var postdata io.Reader;
 
@@ -195,11 +195,19 @@ func (GoRequestContext *GoRequestContext) GetPage(uri string,) (int, string, str
 		}
 
 		//
-		req, _ = http.NewRequest(GoRequestContext.Method, u.String(), postdata);	
+		req, err = http.NewRequest(GoRequestContext.Method, u.String(), postdata);
+		if (err != nil) {
+			return 0, "", "", err.Error();
+	
+		}
 
 	} else {
 		GoRequestContext.Debug(" > Without PostData!");
-		req, _ = http.NewRequest(GoRequestContext.Method, u.String(), nil);
+		req, err = http.NewRequest(GoRequestContext.Method, u.String(), nil);
+		if (err != nil) {
+			return 0, "", "", err.Error();
+	
+		}
 	
 	}
 	
@@ -250,7 +258,7 @@ func (GoRequestContext *GoRequestContext) GetPage(uri string,) (int, string, str
 	}
 	if (newRedirectLink != "") {
 		GoRequestContext.Method = "GET";
-		GoRequestContext.RequestData = RequestData{};
+		GoRequestContext.RequestData = &RequestData{};
 
 		if (strings.ToUpper(newRedirectLink[:4]) != "HTTP") {
 			if (strings.Contains(newRedirectLink, "?")) {
@@ -313,13 +321,13 @@ func (GoRequestContext *GoRequestContext) POST(uri string, postdata string) (int
 	defer func() {
 		errorMessage := recover();
 		if (errorMessage != nil) {
-			fmt.Println("Something went wrong while POST! " + errorMessage.(string));
+			fmt.Println("Something went wrong while POST! ");
 
 		}
 	}();
 
 	GoRequestContext.Method = "POST";
-	requestData := RequestData{
+	requestData := &RequestData{
 		Status: true,
 		Type: "application/x-www-form-urlencoded",
 		Data: postdata,
@@ -334,7 +342,7 @@ func (GoRequestContext *GoRequestContext) GET(uri string) (int, string, string, 
 	defer func() {
 		errorMessage := recover();
 		if (errorMessage != nil) {
-			fmt.Println("Something went wrong while GET! " + errorMessage.(string));
+			fmt.Println("Something went wrong while GET! ");
 
 		}
 	}();
