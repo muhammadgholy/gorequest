@@ -129,12 +129,6 @@ func (GoRequestContext *GoRequestContext) GetHeaders(uri string) map[string]stri
 		
 	}
 
-	if (GoRequestContext.Request.AdditionalHeader) {
-		headers["Upgrade-Insecure-Requests"] = "1";
-		headers["Cache-Control"] = "max-age=0";
-		
-	}
-
 	for _, hData := range GoRequestContext.Request.Header {
 		if (strings.ToLower(hData.Name) == "content-type") {
 			headers["Content-Type"] = hData.Value;
@@ -158,7 +152,6 @@ func (GoRequestContext *GoRequestContext) GetHeaders(uri string) map[string]stri
 				headers[hData.Name] = hData.Value;
 
 			}
-
 		}
 	}
 
