@@ -146,8 +146,19 @@ func (GoRequestContext *GoRequestContext) GetHeaders(uri string) map[string]stri
 			headers["Accept-Encoding"] = hData.Value;
 	
 		} else {
-			headers[hData.Name] = hData.Value;
-	
+			var founded bool = false;
+			for tmp1 := range headers {
+				if (strings.EqualFold(tmp1, hData.Name)) {
+					headers[tmp1] = hData.Value;
+					founded = true;
+
+				}
+			}
+			if (!founded) {
+				headers[hData.Name] = hData.Value;
+
+			}
+
 		}
 	}
 
