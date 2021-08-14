@@ -4,32 +4,42 @@ import "net/http"
 
 type GoRequestContext struct {
 	HTTPContext *http.Client
-	HTTPVersion string
-	MaxRedirect int
-	Header []HeaderData
-	CookiesContext *GoRequestCookiesContext
-	URLLast string
-	URLStack []string
-	CookiesEnable bool
-	AdditionalHeader bool
-	Accept string
-	UserAgent  string
-	FollowLocation bool
-	Referer string
-	Method string
-	RequestData *RequestData
+
+	Request *NewRequest
+
 	Proxy string
 	ProxyType string
+
 	Timeout int
-	EnableDebug bool
-	RequestRAW string
 }
 
-type GoRequestCookiesContext struct {
+
+type NewRequest struct {
 	Cookies []CookiesData
-}
+	Header []HeaderData
+	
+	EnableDebug bool
 
-type RequestData struct {
+	FollowLocation bool
+	AdditionalHeader bool
+	CookiesEnable bool
+	
+	Referer string
+	Accept string
+	UserAgent string
+	RequestRAW string
+
+	MaxRedirect int
+
+	URLLast string
+	URLStack []string
+
+	Debugger []string
+
+	Method string
+	Body RequestBody
+}
+type RequestBody struct {
 	Status bool
 	Type string
 	FormData map[string]string

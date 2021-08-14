@@ -76,22 +76,21 @@ func (GoRequestContext *GoRequestContext) CookiesAdd(data string, host string) {
 	}
 
 	if (!isExpired) {
-		GoRequestContext.Debug(" > Cookies Added \"" + cookieName + "\" \"" + cookieValue + "\"");
 		newCookieData := CookiesData{
 			Domain: domain,
 			Name: cookieName,
 			Value: cookieValue,
 			Path: path,
 		};
-		GoRequestContext.CookiesContext.Cookies = append(GoRequestContext.CookiesContext.Cookies, newCookieData);
+		GoRequestContext.Request.Cookies = append(GoRequestContext.Request.Cookies, newCookieData);
 
 	}
 }
 
 func (GoRequestContext *GoRequestContext) CookiesDelete(name string, domain string, path string) {
-	for key, value := range GoRequestContext.CookiesContext.Cookies {
+	for key, value := range GoRequestContext.Request.Cookies {
 		if (value.Domain == domain && value.Name == name && value.Path == path) {
-			GoRequestContext.CookiesContext.Cookies = append(GoRequestContext.CookiesContext.Cookies[:key], GoRequestContext.CookiesContext.Cookies[key+1:]...);
+			GoRequestContext.Request.Cookies = append(GoRequestContext.Request.Cookies[:key], GoRequestContext.Request.Cookies[key+1:]...);
 
 		}
 	}
@@ -107,7 +106,7 @@ func (GoRequestContext *GoRequestContext) CookiesFetch(domain string, path strin
 		return cookies;
 
 	}
-	for _, value := range GoRequestContext.CookiesContext.Cookies {
+	for _, value := range GoRequestContext.Request.Cookies {
 		if (value.Domain[0:1] == ".") {
 			if (len(value.Domain) >= len(domain)) {
 				limit := len(domain)-len(value.Domain);
