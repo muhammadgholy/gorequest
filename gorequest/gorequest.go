@@ -8,6 +8,7 @@ import (
 	"io"
 	"io/ioutil"
 	"log"
+	"net"
 	"net/http"
 	"net/url"
 	"strconv"
@@ -32,34 +33,32 @@ func (GoRequestContext *GoRequestContext) Init() {
 	customTransport.MaxIdleConnsPerHost = 100000;
 	customTransport.MaxConnsPerHost = 100000;
 	customTransport.IdleConnTimeout = 90 * time.Second;
-	customTransport.DisableCompression = true;
 	customTransport.TLSHandshakeTimeout = time.Duration(GoRequestContext.Timeout) * time.Second;
-	// customTransport.Dial = (&net.Dialer{
-	// 	Timeout: time.Duration(GoRequestContext.Timeout) * time.Second,
-	// }).Dial,;
+	customTransport.DialContext =  (&net.Dialer{
+		Timeout:   time.Duration(GoRequestContext.Timeout) * time.Second,
+		KeepAlive: 30 * time.Minute,
+	}).DialContext;
 
 	// Proxy
 	if (GoRequestContext.Proxy != "") {
-		// dialer, _ := proxy.SOCKS5("tcp", GoRequestContext.Proxy, nil, proxy.Direct);
-		// dialContext := func(ctx context.Context, network, address string) (net.Conn, error) {
-		// 	return dialer.Dial(network, address)
-		// }
 		proxy, _ := url.Parse(GoRequestContext.ProxyType + "://" + GoRequestContext.Proxy);
 		customTransport.Proxy = http.ProxyURL(proxy);
 
 	}
-
-	// create a custom error to know if a redirect happened.
-	var RedirectAttemptedError = errors.New("GOREQUEST_DO_REDIRECT");
-
-	// return the error, so client won't attempt redirects.
-	http.DefaultTransport.(*http.Transport).TLSClientConfig = &tls.Config{
-		InsecureSkipVerify: true,
-	}
+	
 	GoRequestContext.HTTPContext = &http.Client{
 		Transport: customTransport,
 		Timeout: time.Second * time.Duration(GoRequestContext.Timeout),
 	}
+
+	http.DefaultTransport.(*http.Transport).TLSClientConfig = &tls.Config{
+		InsecureSkipVerify: true,
+	}
+		
+	// create a custom error to know if a redirect happened.
+	var RedirectAttemptedError = errors.New("GOREQUEST_DO_REDIRECT");
+
+	// return the error, so client won't attempt redirects.
 	GoRequestContext.HTTPContext.CheckRedirect = func(req *http.Request, via []*http.Request) error {
 		if (len(via) > GoRequestContext.MaxRedirect) {
 			return errors.New("too many redirects");
@@ -208,7 +207,7 @@ func (GoRequestContext *GoRequestContext) GetPage(uri string,) (int, string, str
 		}
 	
 	}
-	
+
 	// Headers
 	requestHeader = GoRequestContext.GetHeaders(uri);
 	for hName, hValue := range requestHeader {
@@ -225,17 +224,43 @@ func (GoRequestContext *GoRequestContext) GetPage(uri string,) (int, string, str
 		}
 	}
 
+	var requestRaw string = request.Request.Method + " " + u.RequestURI() + " " + request.Proto + "\n";
+	for key, value := range request.Request.Header {
+		for _, value2 := range value {
+			headerName := strings.ToLower(key);
+			headerValue := value2;
+			requestRaw = requestRaw + headerName + ": " + headerValue + "\n";
+
+		}
+	}
+	requestRaw = requestRaw + "\n";
+	if (GoRequestContext.RequestData != nil) {	
+		if (len(GoRequestContext.RequestData.FormData) > 0) {
+			requestRaw = requestRaw + "Form Data: \n";
+			for k,v := range GoRequestContext.RequestData.FormData {
+				requestRaw = requestRaw + k + ": " + v + "\n";
+	
+			}
+
+		} else {
+			requestRaw = requestRaw + GoRequestContext.RequestData.Data + "\n";
+
+		}
+	}
+	GoRequestContext.RequestRAW = requestRaw;
+
 	if (GoRequestContext.EnableDebug) {
 		fmt.Println("Header: ", request.Request.Header);
 		fmt.Println("Method: ", request.Request.Method);
 		fmt.Println("Body: ", request.Request.Body);
 		fmt.Println("Host: ", request.Request.Host);
-		fmt.Println("ContentLength: ", request.Request.ContentLength);
-		fmt.Println("Proto: ", request.Request.Proto);
+		fmt.Println("ContentLength: ", request.ContentLength);
+		fmt.Println("Proto: ", request.Proto);
 		fmt.Println("TransferEncoding: ", request.Request.TransferEncoding);
 		fmt.Println("Cookies: ", request.Request.Cookies());
 		fmt.Println("Referer: ", request.Request.Referer());
-
+		fmt.Println(GoRequestContext.RequestRAW);
+		
 	}
 
 	//
@@ -248,6 +273,7 @@ func (GoRequestContext *GoRequestContext) GetPage(uri string,) (int, string, str
 			// 
 			headerName := strings.ToLower(key);
 			headerValue := value2;
+			GoRequestContext.Debug(" < Get Header \"" + headerName + "\" with value \"" + headerValue + "\"");
 			if (headerName == "set-cookie") {
 				GoRequestContext.CookiesAdd(headerValue, request.Request.Host);
 				

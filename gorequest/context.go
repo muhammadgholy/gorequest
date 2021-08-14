@@ -4,6 +4,7 @@ import "net/http"
 
 type GoRequestContext struct {
 	HTTPContext *http.Client
+	HTTPVersion string
 	MaxRedirect int
 	Header []HeaderData
 	CookiesContext *GoRequestCookiesContext
@@ -21,6 +22,7 @@ type GoRequestContext struct {
 	ProxyType string
 	Timeout int
 	EnableDebug bool
+	RequestRAW string
 }
 
 type GoRequestCookiesContext struct {
