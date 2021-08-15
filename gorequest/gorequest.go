@@ -31,6 +31,7 @@ func (GoRequestContext *GoRequestContext) Init() {
 
 	customTransport := http.DefaultTransport.(*http.Transport).Clone()
 	customTransport.MaxIdleConns = 100000;
+	customTransport.TLSClientConfig = &tls.Config{InsecureSkipVerify:true};
 	customTransport.MaxIdleConnsPerHost = 100000;
 	customTransport.MaxConnsPerHost = 100000;
 	customTransport.IdleConnTimeout = 90 * time.Second;
@@ -52,10 +53,6 @@ func (GoRequestContext *GoRequestContext) Init() {
 		Timeout: time.Second * time.Duration(GoRequestContext.Timeout),
 	}
 
-	http.DefaultTransport.(*http.Transport).TLSClientConfig = &tls.Config{
-		InsecureSkipVerify: true,
-	}
-		
 	// create a custom error to know if a redirect happened.
 	var RedirectAttemptedError = errors.New("GOREQUEST_DO_REDIRECT");
 
@@ -75,6 +72,41 @@ func (GoRequestContext *GoRequestContext) Init() {
 	}
 }
 
+func sanitizeOrWarn(fieldName string, valid func(byte) bool, v string) string {
+	ok := true
+	for i := 0; i < len(v); i++ {
+		if valid(v[i]) {
+			continue
+		}
+		ok = false
+		break
+	}
+	if ok {
+		return v
+	}
+	buf := make([]byte, 0, len(v))
+	for i := 0; i < len(v); i++ {
+		if b := v[i]; valid(b) {
+			buf = append(buf, b)
+		}
+	}
+	return string(buf)
+}
+
+func validCookieValueByte(b byte) bool {
+	return 0x20 <= b && b < 0x7f && b != '"' && b != ';' && b != '\\'
+}
+func sanitizeCookieValue(v string) string {
+	v = sanitizeOrWarn("Cookie.Value", validCookieValueByte, v)
+	if len(v) == 0 {
+		return v
+	}
+	if strings.IndexByte(v, ' ') >= 0 || strings.IndexByte(v, ',') >= 0 {
+		return `"` + v + `"`
+	}
+	return v
+}
+
 func (GoRequestContext *GoRequestContext) GetHeaders(Request *NewRequest, uri string) map[string]string {
 	headers := make(map[string]string);
 
@@ -86,6 +118,7 @@ func (GoRequestContext *GoRequestContext) GetHeaders(Request *NewRequest, uri st
 	
 
 	if (Request.AdditionalHeader) {
+		headers["Host"] = u.Host;
 		headers["User-Agent"] = Request.UserAgent;
 		headers["Accept"] = Request.Accept;
 		headers["Accept-Language"] = "en-US,en;q=0.9,mt;q=0.8";
@@ -119,7 +152,7 @@ func (GoRequestContext *GoRequestContext) GetHeaders(Request *NewRequest, uri st
 		if (len(currentCookies) > 0) {
 			var tmp1 []string;
 			for key, value := range currentCookies {
-				tmp1 = append(tmp1, key + "=" + strings.Replace(value, " ", "+", -1));
+				tmp1 = append(tmp1, key + "=" + sanitizeCookieValue(strings.Replace(value, " ", "+", -1)));
 		
 			}
 			headers["Cookie"] = strings.Join(tmp1, "; ");
@@ -236,7 +269,9 @@ func (GoRequestContext *GoRequestContext) GetPage(Request *NewRequest, uri strin
 		}
 	}
 
+
 	var requestRaw string = "> " + request.Request.Method + " " + u.RequestURI() + " " + request.Proto + "\n";
+
 	for key, value := range request.Request.Header {
 		for _, value2 := range value {
 			headerName := strings.ToLower(key);
