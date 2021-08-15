@@ -5,7 +5,7 @@ import (
 	"time"
 )
 
-func (GoRequestContext *GoRequestContext) CookiesAdd(data string, host string) {
+func (GoRequestContext *GoRequestContext) CookiesAdd(Request *NewRequest, data string, host string) {
 	list := strings.Split(data, ";");
 	if (!strings.Contains(list[0], "=")) {
 		return;
@@ -68,7 +68,7 @@ func (GoRequestContext *GoRequestContext) CookiesAdd(data string, host string) {
 			var expiryTime int = int(t.Unix());
 			var currentTime int = int(time.Now().Unix());
 			if (expiryTime < currentTime) {
-				GoRequestContext.CookiesDelete(cookieName, domain, path);
+				GoRequestContext.CookiesDelete(Request, cookieName, domain, path);
 				isExpired = true;
 
 			}
@@ -82,21 +82,21 @@ func (GoRequestContext *GoRequestContext) CookiesAdd(data string, host string) {
 			Value: cookieValue,
 			Path: path,
 		};
-		GoRequestContext.Request.Cookies = append(GoRequestContext.Request.Cookies, newCookieData);
+		Request.CookiesContext.Cookies = append(Request.CookiesContext.Cookies, newCookieData);
 
 	}
 }
 
-func (GoRequestContext *GoRequestContext) CookiesDelete(name string, domain string, path string) {
-	for key, value := range GoRequestContext.Request.Cookies {
+func (GoRequestContext *GoRequestContext) CookiesDelete(Request *NewRequest, name string, domain string, path string) {
+	for key, value := range Request.CookiesContext.Cookies {
 		if (value.Domain == domain && value.Name == name && value.Path == path) {
-			GoRequestContext.Request.Cookies = append(GoRequestContext.Request.Cookies[:key], GoRequestContext.Request.Cookies[key+1:]...);
+			Request.CookiesContext.Cookies = append(Request.CookiesContext.Cookies[:key], Request.CookiesContext.Cookies[key+1:]...);
 
 		}
 	}
 }
 
-func (GoRequestContext *GoRequestContext) CookiesFetch(domain string, path string) map[string]string {
+func (GoRequestContext *GoRequestContext) CookiesFetch(Request *NewRequest, domain string, path string) map[string]string {
 	var cookies = make(map[string]string);
 	if (path == "") {
 		path = "/";
@@ -106,7 +106,7 @@ func (GoRequestContext *GoRequestContext) CookiesFetch(domain string, path strin
 		return cookies;
 
 	}
-	for _, value := range GoRequestContext.Request.Cookies {
+	for _, value := range Request.CookiesContext.Cookies {
 		if (value.Domain[0:1] == ".") {
 			if (len(value.Domain) >= len(domain)) {
 				limit := len(domain)-len(value.Domain);

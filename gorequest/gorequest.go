@@ -17,8 +17,8 @@ import (
 )
 
 func (GoRequestContext *GoRequestContext) Debug(message string) {
-	if (GoRequestContext.Request.EnableDebug) {
-		GoRequestContext.Request.Debugger = append(GoRequestContext.Request.Debugger, message);
+	if (GoRequestContext.EnableDebug) {
+		GoRequestContext.Debugger = append(GoRequestContext.Debugger, message);
 		fmt.Println(message);
 		
 	}
@@ -61,19 +61,21 @@ func (GoRequestContext *GoRequestContext) Init() {
 
 	// return the error, so client won't attempt redirects.
 	GoRequestContext.HTTPContext.CheckRedirect = func(req *http.Request, via []*http.Request) error {
-		if (len(via) > GoRequestContext.Request.MaxRedirect) {
+		if (len(via) > GoRequestContext.MaxRedirect) {
 			return errors.New("too many redirects");
 			
 		}
-		lastUrlQuery := req.URL.RequestURI();
-		GoRequestContext.Request.URLStack = append(GoRequestContext.Request.URLStack, lastUrlQuery);
-		GoRequestContext.Request.URLLast = lastUrlQuery;
+
+		// Not Important
+		// lastUrlQuery := req.URL.RequestURI();
+		// GoRequestContext.Request.URLStack = append(GoRequestContext.Request.URLStack, lastUrlQuery);
+		// GoRequestContext.Request.URLLast = lastUrlQuery;
 
 		return RedirectAttemptedError
 	}
 }
 
-func (GoRequestContext *GoRequestContext) GetHeaders(uri string) map[string]string {
+func (GoRequestContext *GoRequestContext) GetHeaders(Request *NewRequest, uri string) map[string]string {
 	headers := make(map[string]string);
 
 	u, err := url.Parse(uri)
@@ -83,9 +85,9 @@ func (GoRequestContext *GoRequestContext) GetHeaders(uri string) map[string]stri
     }
 	
 
-	if (GoRequestContext.Request.AdditionalHeader) {
-		headers["User-Agent"] = GoRequestContext.Request.UserAgent;
-		headers["Accept"] = GoRequestContext.Request.Accept;
+	if (Request.AdditionalHeader) {
+		headers["User-Agent"] = Request.UserAgent;
+		headers["Accept"] = Request.Accept;
 		headers["Accept-Language"] = "en-US,en;q=0.9,mt;q=0.8";
 		headers["Accept-Encoding"] = "gzip, deflate";
 		headers["upgrade-insecure-requests"] = "1";
@@ -102,18 +104,18 @@ func (GoRequestContext *GoRequestContext) GetHeaders(uri string) map[string]stri
 
 	}
 
-	if (GoRequestContext.Request.Body.Status) {
-		headers["Content-Type"] = GoRequestContext.Request.Body.Type;
-		headers["Content-Length"] = strconv.Itoa(int(GoRequestContext.Request.Body.Length));
-		if (GoRequestContext.Request.AdditionalHeader) {
+	if (Request.Body.Status) {
+		headers["Content-Type"] = Request.Body.Type;
+		headers["Content-Length"] = strconv.Itoa(int(Request.Body.Length));
+		if (Request.AdditionalHeader) {
 			headers["origin"] = u.Scheme + "://" + u.Host;
 		
 		}
 	}
 
-	if (GoRequestContext.Request.CookiesEnable) {
+	if (Request.CookiesEnable) {
 		// Set Headers Cookies
-		currentCookies := GoRequestContext.CookiesFetch(u.Host, "/");
+		currentCookies := GoRequestContext.CookiesFetch(Request, u.Host, "/");
 		if (len(currentCookies) > 0) {
 			var tmp1 []string;
 			for key, value := range currentCookies {
@@ -124,12 +126,12 @@ func (GoRequestContext *GoRequestContext) GetHeaders(uri string) map[string]stri
 		}
 	}
 
-	if (GoRequestContext.Request.Referer != "") {
-		headers["Referer"] = GoRequestContext.Request.Referer;
+	if (Request.Referer != "") {
+		headers["Referer"] = Request.Referer;
 		
 	}
 
-	for _, hData := range GoRequestContext.Request.Header {
+	for _, hData := range Request.Header {
 		if (strings.ToLower(hData.Name) == "content-type") {
 			headers["Content-Type"] = hData.Value;
 
@@ -158,7 +160,7 @@ func (GoRequestContext *GoRequestContext) GetHeaders(uri string) map[string]stri
 	return headers;
 }
 
-func (GoRequestContext *GoRequestContext) GetPage(uri string,) (int, string, string, string) {
+func (GoRequestContext *GoRequestContext) GetPage(Request *NewRequest, uri string,) (int, string, string, string) {
 	// defer func() {
 	// 	errorMessage := recover();
 	// 	if (errorMessage != nil) {
@@ -184,32 +186,32 @@ func (GoRequestContext *GoRequestContext) GetPage(uri string,) (int, string, str
 
 	// Do It
 	var req *http.Request;
-	if (GoRequestContext.Request.Body.Status) {	
+	if (Request.Body.Status) {	
 		var postdata io.Reader;
 
 		//
-		if (len(GoRequestContext.Request.Body.FormData) > 0) {
+		if (len(Request.Body.FormData) > 0) {
 			form := url.Values{}
-			for k,v := range GoRequestContext.Request.Body.FormData {
+			for k,v := range Request.Body.FormData {
 				form.Add(k, v);
 	
 			}
 			postdata = strings.NewReader(form.Encode());
 
 		} else {
-			postdata = strings.NewReader(GoRequestContext.Request.Body.Data);
+			postdata = strings.NewReader(Request.Body.Data);
 
 		}
 
 		//
-		req, _ = http.NewRequest(GoRequestContext.Request.Method, u.String(), postdata);
+		req, _ = http.NewRequest(Request.Method, u.String(), postdata);
 		if (err != nil) {
 			return 0, "", "", err.Error();
 	
 		}
 
 	} else {
-		req, _ = http.NewRequest(GoRequestContext.Request.Method, u.String(), nil);
+		req, _ = http.NewRequest(Request.Method, u.String(), nil);
 	 	if (err != nil) {
 			return 0, "", "", err.Error();
 	
@@ -218,7 +220,7 @@ func (GoRequestContext *GoRequestContext) GetPage(uri string,) (int, string, str
 	}
 
 	// Headers
-	requestHeader = GoRequestContext.GetHeaders(uri);
+	requestHeader = GoRequestContext.GetHeaders(Request, uri);
 	for hName, hValue := range requestHeader {
 		req.Header.Add(hName, hValue);
 
@@ -241,24 +243,24 @@ func (GoRequestContext *GoRequestContext) GetPage(uri string,) (int, string, str
 
 		}
 	}
-	if (GoRequestContext.Request.Body.Status) {	
+	if (Request.Body.Status) {	
 		requestRaw = requestRaw + "> \n";
-		if (len(GoRequestContext.Request.Body.FormData) > 0) {
+		if (len(Request.Body.FormData) > 0) {
 			requestRaw = requestRaw + "Form Data: \n";
-			for k,v := range GoRequestContext.Request.Body.FormData {
+			for k,v := range Request.Body.FormData {
 				requestRaw = requestRaw + "> " + k + ": " + v + "\n";
 	
 			}
 
 		} else {
-			requestRaw = requestRaw + "> " + GoRequestContext.Request.Body.Data + "\n";
+			requestRaw = requestRaw + "> " + Request.Body.Data + "\n";
 
 		}
 	}
-	GoRequestContext.Request.RequestRAW = requestRaw;
+	Request.RequestRAW = requestRaw;
 
-	if (GoRequestContext.Request.EnableDebug) {
-		GoRequestContext.Debug(strings.TrimSpace(GoRequestContext.Request.RequestRAW));
+	if (GoRequestContext.EnableDebug) {
+		GoRequestContext.Debug(strings.TrimSpace(Request.RequestRAW));
 		GoRequestContext.Debug(">");
 		GoRequestContext.Debug("< " + request.Proto + " " + strconv.Itoa(request.StatusCode));
 		
@@ -276,14 +278,14 @@ func (GoRequestContext *GoRequestContext) GetPage(uri string,) (int, string, str
 			headerValue := value2;
 
 			//
-			if (GoRequestContext.Request.EnableDebug) {
+			if (GoRequestContext.EnableDebug) {
 				GoRequestContext.Debug("< " + headerName + ": " + headerValue);
 				
 			}
 
 			//
 			if (headerName == "set-cookie") {
-				GoRequestContext.CookiesAdd(headerValue, request.Request.Host);
+				GoRequestContext.CookiesAdd(Request, headerValue, request.Request.Host);
 				
 			} else if (headerName == "location") {
 				newRedirectLink = strings.TrimSpace(headerValue);
@@ -292,8 +294,8 @@ func (GoRequestContext *GoRequestContext) GetPage(uri string,) (int, string, str
 		}
 	}
 	if (newRedirectLink != "") {
-		GoRequestContext.Request.Method = "GET";
-		GoRequestContext.Request.Body = RequestBody{};
+		Request.Method = "GET";
+		Request.Body = RequestBody{};
 		if (strings.ToUpper(newRedirectLink[:4]) != "HTTP") {
 			if (strings.Contains(newRedirectLink, "?")) {
 				tmp2 := strings.SplitN(newRedirectLink, "?", 2);
@@ -318,8 +320,8 @@ func (GoRequestContext *GoRequestContext) GetPage(uri string,) (int, string, str
 			newRedirectLink = u.String();
 		}
 
-		GoRequestContext.Request.Referer = u.String();
-		return GoRequestContext.GetPage(newRedirectLink);
+		Request.Referer = u.String();
+		return GoRequestContext.GetPage(Request, newRedirectLink);
 	}
 	respondHeader = strings.Join(tmp1, "\n");
 	
@@ -351,7 +353,7 @@ func (GoRequestContext *GoRequestContext) GetPage(uri string,) (int, string, str
 	return request.StatusCode, respondHeader, respondBody, "";
 }
 
-func (GoRequestContext *GoRequestContext) POST(uri string, postdata string) (int, string, string, string) {
+func (GoRequestContext *GoRequestContext) POST(Request *NewRequest, uri string, postdata string) (int, string, string, string) {
 	defer func() {
 		errorMessage := recover();
 		if (errorMessage != nil) {
@@ -360,18 +362,18 @@ func (GoRequestContext *GoRequestContext) POST(uri string, postdata string) (int
 		}
 	}();
 
-	GoRequestContext.Request.Method = "POST";
-	GoRequestContext.Request.Body = RequestBody {
+	Request.Method = "POST";
+	Request.Body = RequestBody {
 		Status: true,
 		Type: "application/x-www-form-urlencoded",
 		Data: postdata,
 		Length: int32(len(postdata)),
 	};
 
-	return GoRequestContext.GetPage(uri);	
+	return GoRequestContext.GetPage(Request, uri);	
 }
 
-func (GoRequestContext *GoRequestContext) GET(uri string) (int, string, string, string) {
+func (GoRequestContext *GoRequestContext) GET(Request *NewRequest, uri string) (int, string, string, string) {
 	// defer func() {
 	// 	errorMessage := recover();
 	// 	if (errorMessage != nil) {
@@ -380,8 +382,8 @@ func (GoRequestContext *GoRequestContext) GET(uri string) (int, string, string, 
 	// 	}
 	// }();
 
-	GoRequestContext.Request.Method = "GET";
-	GoRequestContext.Request.Body = RequestBody {}
+	Request.Method = "GET";
+	Request.Body = RequestBody {}
 
-	return GoRequestContext.GetPage(uri);	
+	return GoRequestContext.GetPage(Request, uri);	
 }

@@ -5,7 +5,9 @@ import "net/http"
 type GoRequestContext struct {
 	HTTPContext *http.Client
 
-	Request *NewRequest
+	MaxRedirect int
+	EnableDebug bool
+	Debugger []string
 
 	Proxy string
 	ProxyType string
@@ -15,10 +17,8 @@ type GoRequestContext struct {
 
 
 type NewRequest struct {
-	Cookies []CookiesData
+	CookiesContext *CookiesContext
 	Header []HeaderData
-	
-	EnableDebug bool
 
 	FollowLocation bool
 	AdditionalHeader bool
@@ -29,13 +29,6 @@ type NewRequest struct {
 	UserAgent string
 	RequestRAW string
 
-	MaxRedirect int
-
-	URLLast string
-	URLStack []string
-
-	Debugger []string
-
 	Method string
 	Body RequestBody
 }
@@ -45,6 +38,9 @@ type RequestBody struct {
 	FormData map[string]string
 	Data string
 	Length int32
+}
+type CookiesContext struct {
+	Cookies []CookiesData
 }
 
 type HeaderData struct {
