@@ -21,6 +21,7 @@ func main() {
 		Timeout: 15,
 		// EnableDebug: true,
 		MaxRedirect: 10,
+		
 	};
 	GoRequest.Init();
 
