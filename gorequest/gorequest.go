@@ -227,15 +227,13 @@ func (GoRequestContext *GoRequestContext) GetPage(Request *NewRequest, uri strin
 	// Do It
 	var req *http.Request;
 	if (Request.Body.Status) {	
-
-		//
-		req, _ = http.NewRequest(Request.Method, u.String(), nil);
+		req, _ = http.NewRequest(Request.Method, u.String(), strings.NewReader(Request.Body.Data));
 		if (err != nil) {
 			return 0, "", "", err.Error();
 	
 		}
 
-		//
+		// Change to form data
 		if (len(Request.Body.FormData) > 0) {
 			form := url.Values{}
 			for k,v := range Request.Body.FormData {
@@ -244,10 +242,6 @@ func (GoRequestContext *GoRequestContext) GetPage(Request *NewRequest, uri strin
 			}
 			req.PostForm = form;
 			req.ParseForm();
-
-		} else {
-			postdata := strings.NewReader(Request.Body.Data);
-			req.Body = ioutil.NopCloser(postdata);
 
 		}
 
