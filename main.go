@@ -20,8 +20,6 @@ func main() {
 	var GoRequest gorequest.GoRequest = &gorequest.GoRequestContext{
 		Timeout: 15,
 		EnableDebug: true,
-		Proxy: "127.0.0.1:8080",
-		ProxyType: "https",
 		MaxRedirect: 10,
 	};
 

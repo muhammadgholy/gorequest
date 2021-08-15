@@ -222,7 +222,13 @@ func (GoRequestContext *GoRequestContext) GetPage(Request *NewRequest, uri strin
 	// Do It
 	var req *http.Request;
 	if (Request.Body.Status) {	
-		var postdata io.Reader;
+
+		//
+		req, _ = http.NewRequest(Request.Method, u.String(), nil);
+		if (err != nil) {
+			return 0, "", "", err.Error();
+	
+		}
 
 		//
 		if (len(Request.Body.FormData) > 0) {
@@ -231,18 +237,13 @@ func (GoRequestContext *GoRequestContext) GetPage(Request *NewRequest, uri strin
 				form.Add(k, v);
 	
 			}
-			postdata = strings.NewReader(form.Encode());
+			req.PostForm = form;
+			req.ParseForm();
 
 		} else {
-			postdata = strings.NewReader(Request.Body.Data);
+			postdata := strings.NewReader(Request.Body.Data);
+			req.Body = ioutil.NopCloser(postdata);
 
-		}
-
-		//
-		req, _ = http.NewRequest(Request.Method, u.String(), postdata);
-		if (err != nil) {
-			return 0, "", "", err.Error();
-	
 		}
 
 	} else {
@@ -251,15 +252,26 @@ func (GoRequestContext *GoRequestContext) GetPage(Request *NewRequest, uri strin
 			return 0, "", "", err.Error();
 	
 		}
-	
+
 	}
 
 	// Headers
 	requestHeader = GoRequestContext.GetHeaders(Request, uri);
 	for hName, hValue := range requestHeader {
-		req.Header.Add(hName, hValue);
+		if (strings.ToLower(hName) == "accept-encoding") {
+			tmp1 := strings.Split(hValue, ",");
+			for _, v := range tmp1 {
+				tmp2 := strings.TrimSpace(v);
+				req.TransferEncoding = append(req.TransferEncoding, tmp2);
 
+			}
+
+		} else {
+			req.Header.Add(hName, hValue);
+
+		}
 	}
+
 	request, err := GoRequestContext.HTTPContext.Do(req);
 	if (err != nil) {
 		errMessage := err.Error();
