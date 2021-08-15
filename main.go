@@ -21,9 +21,6 @@ func main() {
 		Timeout: 15,
 		// EnableDebug: true,
 		MaxRedirect: 10,
-
-		Proxy: "u0mYE1FR0O:h4HBn23iFg@tia.socks.ipvanish.com:1080",
-		ProxyType: "socks5",
 	};
 	GoRequest.Init();
 
