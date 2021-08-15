@@ -128,14 +128,14 @@ func (GoRequestContext *GoRequestContext) GetHeaders(Request *NewRequest, uri st
 		headers["Accept"] = Request.Accept;
 		headers["Accept-Language"] = "en-US,en;q=0.9,mt;q=0.8";
 		headers["Accept-Encoding"] = "gzip, deflate";
-		headers["upgrade-insecure-requests"] = "1";
-		headers["sec-fetch-user"] = "?1";
-		headers["sec-fetch-site"] = "none";
-		headers["sec-fetch-mode"] = "navigate";
-		headers["sec-fetch-dest"] = "document";
-		headers["sec-ch-ua-mobile"] = "?0";
-		headers["sec-ch-ua"] = "\"Chromium\";v=\"92\", \" Not A;Brand\";v=\"99\", \"Google Chrome\";v=\"92\"";
-		headers["upgrade-insecure-requests"] = "1";
+		// headers["upgrade-insecure-requests"] = "1";
+		// headers["sec-fetch-user"] = "?1";
+		// headers["sec-fetch-site"] = "none";
+		// headers["sec-fetch-mode"] = "navigate";
+		// headers["sec-fetch-dest"] = "document";
+		// headers["sec-ch-ua-mobile"] = "?0";
+		// headers["sec-ch-ua"] = "\"Chromium\";v=\"92\", \" Not A;Brand\";v=\"99\", \"Google Chrome\";v=\"92\"";
+		// headers["upgrade-insecure-requests"] = "1";
 		headers["cache-control"] = "no-cache";
 		headers["Pragma"] = "no-cache"; // Disable Web Caching
 		// headers["Connection"] = "Keep-Alive"; // Not Important
