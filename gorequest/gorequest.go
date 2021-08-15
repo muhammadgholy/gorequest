@@ -29,6 +29,11 @@ func (GoRequestContext *GoRequestContext) Init() {
 
 	}
 
+	if (GoRequestContext.HTTPContext != nil) {
+		GoRequestContext.HTTPContext.CloseIdleConnections();
+
+	}
+
 	customTransport := http.DefaultTransport.(*http.Transport).Clone()
 	customTransport.MaxIdleConns = 100000;
 	customTransport.TLSClientConfig = &tls.Config{InsecureSkipVerify:true};

@@ -19,11 +19,15 @@ func main() {
 
 	var GoRequest gorequest.GoRequest = &gorequest.GoRequestContext{
 		Timeout: 15,
-		EnableDebug: true,
+		// EnableDebug: true,
 		MaxRedirect: 10,
-	};
 
+		Proxy: "u0mYE1FR0O:h4HBn23iFg@tia.socks.ipvanish.com:1080",
+		ProxyType: "socks5",
+	};
 	GoRequest.Init();
+
+	
 	if (len(os.Args) == 2) { 
 		statuscode, header, body, err := GoRequest.GET(NewRequest, os.Args[1]);
 		fmt.Println(header, "\n", "\n", body, "\n\nStatus Code: ", statuscode, "\nError: ", err);
