@@ -28,6 +28,8 @@ type NewRequest struct {
 	Accept string
 	UserAgent string
 	RequestRAW string
+	
+	RequestLastUrl string
 
 	Method string
 	Body RequestBody

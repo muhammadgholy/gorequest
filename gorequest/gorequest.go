@@ -169,6 +169,8 @@ func (GoRequestContext *GoRequestContext) GetPage(Request *NewRequest, uri strin
 	// 	}
 	// }();
 
+	Request.RequestLastUrl = uri;
+
 	var respondHeader string;
 	var respondBody string;
 	var requestHeader = make(map[string]string);
