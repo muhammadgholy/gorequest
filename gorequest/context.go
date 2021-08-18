@@ -6,8 +6,6 @@ type GoRequestContext struct {
 	HTTPContext *http.Client
 
 	MaxRedirect int
-	EnableDebug bool
-	Debugger []string
 
 	Proxy string
 	ProxyType string
@@ -15,9 +13,14 @@ type GoRequestContext struct {
 	Timeout int
 }
 
+type DebuggerContext struct {
+	Enable bool
+	Data []string
+}
 
 type NewRequest struct {
 	CookiesContext *CookiesContext
+	DebuggerContext *DebuggerContext
 	Header []HeaderData
 
 	FollowLocation bool
@@ -26,7 +29,6 @@ type NewRequest struct {
 	
 	Referer string
 	Accept string
-	UserAgent string
 	RequestRAW string
 	
 	RequestLastUrl string

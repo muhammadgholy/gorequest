@@ -16,9 +16,9 @@ import (
 	"time"
 )
 
-func (GoRequestContext *GoRequestContext) Debug(message string) {
-	if (GoRequestContext.EnableDebug) {
-		GoRequestContext.Debugger = append(GoRequestContext.Debugger, message);
+func (GoRequestContext *GoRequestContext) Debug(Request *NewRequest, message string) {
+	if (Request.DebuggerContext.Enable) {
+		Request.DebuggerContext.Data = append(Request.DebuggerContext.Data, message);
 		fmt.Println(message);
 		
 	}
@@ -124,8 +124,8 @@ func (GoRequestContext *GoRequestContext) GetHeaders(Request *NewRequest, uri st
 
 	if (Request.AdditionalHeader) {
 		headers["Host"] = u.Host;
-		headers["User-Agent"] = Request.UserAgent;
-		headers["Accept"] = Request.Accept;
+		headers["User-Agent"] = "GoStepper";
+		headers["Accept"] = "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.9";
 		headers["Accept-Language"] = "en-US,en;q=0.9,mt;q=0.8";
 		headers["Accept-Encoding"] = "gzip, deflate";
 		// headers["upgrade-insecure-requests"] = "1";
@@ -139,7 +139,6 @@ func (GoRequestContext *GoRequestContext) GetHeaders(Request *NewRequest, uri st
 		headers["cache-control"] = "no-cache";
 		headers["Pragma"] = "no-cache"; // Disable Web Caching
 		// headers["Connection"] = "Keep-Alive"; // Not Important
-
 	}
 
 	if (Request.Body.Status) {
@@ -307,10 +306,10 @@ func (GoRequestContext *GoRequestContext) GetPage(Request *NewRequest, uri strin
 	}
 	Request.RequestRAW = requestRaw;
 
-	if (GoRequestContext.EnableDebug) {
-		GoRequestContext.Debug(strings.TrimSpace(Request.RequestRAW));
-		GoRequestContext.Debug(">");
-		GoRequestContext.Debug("< " + request.Proto + " " + strconv.Itoa(request.StatusCode));
+	if (Request.DebuggerContext.Enable) {
+		GoRequestContext.Debug(Request, strings.TrimSpace(Request.RequestRAW));
+		GoRequestContext.Debug(Request, ">");
+		GoRequestContext.Debug(Request, "< " + request.Proto + " " + strconv.Itoa(request.StatusCode));
 		
 	}
 
@@ -326,8 +325,8 @@ func (GoRequestContext *GoRequestContext) GetPage(Request *NewRequest, uri strin
 			headerValue := value2;
 
 			//
-			if (GoRequestContext.EnableDebug) {
-				GoRequestContext.Debug("< " + headerName + ": " + headerValue);
+			if (Request.DebuggerContext.Enable) {
+				GoRequestContext.Debug(Request, "< " + headerName + ": " + headerValue);
 				
 			}
 
