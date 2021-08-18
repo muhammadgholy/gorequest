@@ -106,19 +106,18 @@ func (GoRequestContext *GoRequestContext) CookiesFetch(Request *NewRequest, doma
 		return cookies;
 
 	}
-	for _, value := range Request.CookiesContext.Cookies {
-		if (value.Domain[0:1] == ".") {
-			if (len(value.Domain) >= len(domain)) {
-				limit := len(domain)-len(value.Domain);
-				if (limit < 0) {
-					limit = 0;
+	// .www.paypal.com
+	for _, value := range Request.CookiesContext.Cookies {		
+		//
+		limit := len(domain) - len(value.Domain);
+		if (limit < 0) {
+			limit = 0;
 
-				}
-				if ((domain[limit:] == value.Domain[1:]) || (value.Domain == domain)) {
-					cookies[value.Name] = value.Value;
-	
-				}
-			}
+		}
+		
+		//
+		if ((domain[limit:] == value.Domain) || (value.Domain == domain)) {
+			cookies[value.Name] = value.Value;
 
 		} else if (value.Domain == domain) {
 			cookies[value.Name] = value.Value;
